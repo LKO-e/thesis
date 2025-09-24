@@ -1,0 +1,31 @@
+
+#! /bin/bash
+# Try to auto-detect Boost
+set -e # exit if a command fails
+if [ -d "/usr/include/boost" ]; then
+  BOOST_PATH="/usr/include"
+elif [ -d "/usr/local/include/boost" ]; then
+  BOOST_PATH="/usr/local/include"
+elif [ -d "/opt/homebrew/include/boost" ]; then
+  BOOST_PATH="/opt/homebrew/include"
+elif [ -d "$HOME/.local/include/boost" ]; then
+  BOOST_PATH="$HOME/.local/include"
+else
+  echo "Enter the path to Boost library..."
+  read -e BOOST_PATH
+fi
+
+# Change into the directory of this script
+OLDPWD=$(pwd)
+cd "$(dirname "$0")" || exit 1
+mkdir -p plots
+
+printf "Compiling... \n"
+g++ -std=c++17 -I $BOOST_PATH -O2 gyro_pend_sim.cpp -o sim_gp.o
+printf "Running simultation \n"
+./sim_gp.o -o sim_gp.csv
+python3 gyro_pend_sim_plot.py sim_gp.csv plots
+rm sim_gp.o
+rm sim_gp.csv
+
+cd "$OLDPWD" || exit 1
