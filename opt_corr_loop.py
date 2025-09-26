@@ -95,6 +95,6 @@ ax[1].clabel(cs, inline=True, fontsize=12, manual=True, fmt=FuncFormatter(format
 ax[1].plot(T, opt_line_W(T), ls="solid", c="black")
 ax[1].set_ylim(0, 20)
 ax[1].set_xlabel(r"$T_\mathrm{к}, \mathrm{с}$")
-ax[1].set_ylabel(r"$\mathrm{\sigma_{нн}(\omega), \ °/ ч}$")
+ax[1].set_ylabel(r"$\mathrm{\sigma_{нн}, \ °/ ч}$")
 ax[1].set_title("б)")
 plt.show()
