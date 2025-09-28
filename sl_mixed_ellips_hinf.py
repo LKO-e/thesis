@@ -4,7 +4,7 @@ import scipy as sp
 import cvxpy as cvx
 import matplotlib.pyplot as plt
 from src import A, C2, B2, C1, v, W_ol, J1, Ce, L, S, Si
-from src import M_f, D_trq, D_dθ, D_dgam
+from src import M_f, D_trq, D_dtheta, D_dgam
 from src import save_ss, connect_series_siso, ss2tf, dc_gain_ss, calc_hinf, feedback_connect
 import plot_style
 
@@ -187,7 +187,7 @@ def controller_recovery(problem, A, B, C):
 Md_max = M_f + 2 * np.sqrt(D_trq)
 B1 = np.array(
     [
-        [2 * np.sqrt(D_dθ), 0, 0, 0],
+        [2 * np.sqrt(D_dtheta), 0, 0, 0],
         [0, 0, 0, 0],
         [0, Md_max / J1, 0, 0],
         [0, 0, 2 * np.sqrt(D_dgam) * Ce / L, 0],

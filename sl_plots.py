@@ -1,10 +1,10 @@
 import sys
 from pathlib import Path
 import copy
+import json
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy as sp
-import yaml
 from src import connect_series_siso, S, Si, J1, tf_to_num_den, ss2tf, feedback_connect
 import plot_style
 
@@ -818,7 +818,7 @@ if __name__ == "__main__":
     # Load state space matrices
     file_path = Path(__file__).parent.resolve() / "sl_controller.json"
     with open(file_path, "r", newline="") as file:
-        ss_dict = yaml.safe_load(file)
+        ss_dict = json.load(file)
     for ss in ss_dict:
         for key, val in ss_dict[ss].items():
             if val is not None:

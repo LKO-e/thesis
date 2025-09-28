@@ -5,7 +5,7 @@ import cvxpy as cvx
 import scipy as sp
 import matplotlib.pyplot as plt
 from src import A, C2, B2, C1, v, W_ol, H, J2, J1, Ce, L, S, Si
-from src import M_f, D_trq, D_dθ, D_dgam
+from src import M_f, D_trq, D_dtheta, D_dgam
 from src import sqr_FWBT, save_ss, LQR_synthesis, feedback_connect
 from src import dc_gain_ss, ss2tf, tf_to_num_den, get_obsvb_matrix
 from src import get_ctrlb_matrix, connect_series_siso, calc_hinf
@@ -20,7 +20,7 @@ Md_max = M_f + 2 * np.sqrt(D_trq)
 
 B1 = np.array(
     [
-        [2 * np.sqrt(D_dθ), 0, 0],
+        [2 * np.sqrt(D_dtheta), 0, 0],
         [0, 0, 0],
         [0, Md_max / J1, 0],
         [0, 0, 2 * np.sqrt(D_dgam) * Ce / L],

@@ -1,6 +1,6 @@
 import numpy as np
 import scipy as sp
-from src import A, v, C2, B2, C1, D_trq, M_f, D_dθ, J1, D_dgam, Ce, L, S
+from src import A, v, C2, B2, C1, D_trq, M_f, D_dtheta, J1, D_dgam, Ce, L, S
 from src import check_hinf_upper_bound, calc_hinf, ss_d2c
 
 # State space
@@ -9,7 +9,7 @@ B2 = B2[:4, :]
 Md_max = M_f + 2 * np.sqrt(D_trq)
 B1 = np.array(
     [
-        [2 * np.sqrt(D_dθ), 0, 0],
+        [2 * np.sqrt(D_dtheta), 0, 0],
         [0, 0, 0],
         [0, Md_max / J1, 0],
         [0, 0, 2 * np.sqrt(D_dgam) * Ce / L],

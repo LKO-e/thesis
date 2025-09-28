@@ -2,7 +2,7 @@ import numpy as np
 import scipy as sp
 import matplotlib.pyplot as plt
 from src import A, C2, B2, W_ol, H, J2, J1, Jr, Cm, Ce, L, R, S, Si
-from src import M_f, D_trq, D_dθ, D_dgam
+from src import M_f, D_trq, D_dtheta, D_dgam
 from src import penalty_fnc_ellips, save_ss, connect_series_siso, ss2tf
 from src import dc_gain_ss, feedback_connect, calc_hinf
 
@@ -16,7 +16,7 @@ B2 = B2[:4, :]
 Md_max = M_f + 2 * np.sqrt(D_trq)
 B1_ = np.array(
     [
-        [2 * np.sqrt(D_dθ), 0, 0, 0],
+        [2 * np.sqrt(D_dtheta), 0, 0, 0],
         [0, 0, 0, 0],
         [0, Md_max / J1, 0, 0],
         [0, 0, 2 * np.sqrt(D_dgam) * Ce / L, 0],
@@ -78,7 +78,7 @@ def solve_task(task, to_show_plots):
                 Ag = S[:4, :4] @ A @ Si[:4, :4]
                 B1 = np.array(
                     [
-                        [2 * np.sqrt(D_dθ), 0, 0, 0],
+                        [2 * np.sqrt(D_dtheta), 0, 0, 0],
                         [0, 0, 0, 0],
                         [0, Md_max / J1, 0, 0],
                         [0, 0, 2 * np.sqrt(D_dgam) * q * Ce / L, 0],
