@@ -13,11 +13,9 @@ import plot_style
 
 plot_style.set_plot_style()
 
-Md_max = M_f + 2 * np.sqrt(D_trq)
-
 # State space
 
-
+Md_max = M_f + 2 * np.sqrt(D_trq)
 B1 = np.array(
     [
         [2 * np.sqrt(D_dtheta), 0, 0],
@@ -124,8 +122,8 @@ Wfr = sqr_FWBT(Wfw, Wf, 2)
 print("Limit of variances w/ state feedback")
 print("Limit variances w/ state feedback")
 print(f"F= {opt.value: .2e}")
-print(f"β=  {np.sqrt(Z.value[0, 0]) * 60 * 57.3:.2f}")
-print(f"γ1= {np.sqrt(Z.value[1, 1]) * 60 * 57.3 / v:.2f}")
+print(f"β=  {np.sqrt(Z.value[0, 0]) * 60 * 57.3 / v:.2f}")
+print(f"γ1= {np.sqrt(Z.value[1, 1]) * 60 * 57.3:.2f}")
 print(f"u= {np.sqrt(K @ P.value @ K.T)[0][0]:.2f}")
 print(f"kdc = {dc_gain_ss(Wf)[0][0]:.2f}")
 vA = np.block([[A, B2 @ K], [oL @ C2, A + B2 @ K - oL @ C2]])
@@ -138,7 +136,7 @@ print("Real variances w/ observer")
 
 
 def f(ζ):
-    vQ = sp.linalg.solve_continuous_lyapunov(vA + ζ / 2 * np.eye(8), -1 / ζ * vD @ vD.T)
+    vQ = sp.linalg.solve_continuous_lyapunov(vA + ζ / 2 * np.eye(*vA.shape), -1 / ζ * vD @ vD.T)
     return np.trace(vC @ vQ @ vC.T)
 
 
@@ -146,7 +144,7 @@ x = range(1, int(-2 * np.max(np.real(sp.linalg.eigvals(vA)))), 1)
 y = [f(i) for i in x]
 ζ = x[y.index(min(y))]
 print("Observer minimizer η = %i" % ζ)
-vQ = sp.linalg.solve_continuous_lyapunov(vA + ζ / 2 * np.eye(8), -1 / ζ * vD @ vD.T)
+vQ = sp.linalg.solve_continuous_lyapunov(vA + ζ / 2 * np.eye(*vA.shape), -1 / ζ * vD @ vD.T)
 z = vC @ vQ @ vC.T
 print(f"F= {z[0, 0] + z[1, 1] * v**2:.2e}")
 print("|β|max= %.2f'" % (np.sqrt(z[0, 0]) * 60 * 57.3))
@@ -156,7 +154,7 @@ print("|u|max= %.2f V" % (np.sqrt(z[2, 2])))
 print("Real variances w/ observer for reduced order")
 vA = np.block([[A + B2 @ Wfr[3] @ C2, B2 @ Wfr[2]], [Wfr[1] @ C2, Wfr[0]]])
 vD = np.block([[B1], [np.zeros((2, 3))]])
-vC = np.array([[1, 0, 0, 0], [0, J2 / H, 0, 0]])
+vC = np.array([[1, 0, 0, 0], [0, -J2 / H, 0, 0]])
 vC = vC @ Si
 vC = np.block([[vC], [Wfr[3] @ C2]])
 vC = np.block([vC, np.zeros((3, 2))])
@@ -164,7 +162,7 @@ vC[2, 4:] = Wfr[2]
 
 
 def f1(ζ):
-    vQ = sp.linalg.solve_continuous_lyapunov(vA + ζ / 2 * np.eye(6), -1 / ζ * vD @ vD.T)
+    vQ = sp.linalg.solve_continuous_lyapunov(vA + ζ / 2 * np.eye(*vA.shape), -1 / ζ * vD @ vD.T)
     Z = np.trace(vC @ vQ @ vC.T)
     return Z
 
@@ -173,7 +171,7 @@ x = range(1, int(-2 * np.max(np.real(sp.linalg.eigvals(vA)))), 1)
 y = [f1(i) for i in x]
 ζ = x[y.index(min(y))]
 print("Observer minimizer η = %i" % ζ)
-vQ = sp.linalg.solve_continuous_lyapunov(vA + ζ / 2 * np.eye(6), -1 / ζ * vD @ vD.T)
+vQ = sp.linalg.solve_continuous_lyapunov(vA + ζ / 2 * np.eye(*vA.shape), -1 / ζ * vD @ vD.T)
 Z = np.trace(vC @ vQ @ vC.T)
 print(f"F= {z[0, 0] + z[1, 1] * v**2:.2e}")
 print(f"kdc = {dc_gain_ss(Wfr)[0][0]:.2f}")
