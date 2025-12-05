@@ -30,6 +30,8 @@ if len(sys.argv) == 3:
         plot_dir_path.mkdir()
 data = read_csv_columns(sys.argv[1])
 
+l0 = 1600
+
 # Yaw plot
 fig = plt.figure(figsize=(7.0, 2.8))
 ax = plt.subplot(111)
@@ -37,16 +39,16 @@ ax.plot(data["time"], data["psi"] * 57.3, "k-")
 ax.set_ylabel(r"$\mathrm{ψ, \ град.}$")
 ax.set_xlabel(r"$t, \  \mathrm{с}$")
 axins = ax.inset_axes(
-    [0.6, 0.6, 0.3, 0.3],
+    [0.6, 0.15, 0.3, 0.3],
     xlim=(87.0, 90.0),
-    ylim=(-93.85, -94.25),
+    ylim=(93.85, 94.25),
 )
 axins.plot(data["time"], data["psi"] * 57.3, "k-")
 ax.indicate_inset_zoom(axins, edgecolor="black")
 start, end = axins.get_ylim()
 axins.yaxis.tick_right()
 axins1 = ax.inset_axes(
-    [0.1, 0.15, 0.3, 0.3],
+    [0.1, 0.6, 0.3, 0.3],
     xlim=(0, 25.2),
     ylim=(-0.1, 0.1),
 )
@@ -95,13 +97,14 @@ if len(sys.argv) == 3:
 # Roll measurement error plot
 fig = plt.figure(figsize=(7.0, 2.8))
 ax = plt.subplot(111)
-ax.plot(data["time"], (data["gam"] + data["alpha"]) * 57.3 * 60.0, "k-")
-ax.axhline(-4.5, c="k", ls="--")
-ax.axhline(4.5, c="k", ls="--")
-ax.set_ylabel(r"$\mathrm{Δ\hat{γ}, \ угл. \ мин}$")
+# ax.plot(data["time"], (data["gam"] + data["alpha"]) * 57.3 * 60.0, "k-")
+ax.plot(data["time"], l0 * np.sin(data["gam"] + data["alpha"]), "k-")
+ax.axhline(-2.1, c="k", ls="--")
+ax.axhline(2.1, c="k", ls="--")
+ax.set_ylabel(r"$Δ\hat{h}, \ \mathrm{мм}$")
 ax.set_xlabel(r"$t, \  \mathrm{с}$")
 if len(sys.argv) == 3:
-    plt.savefig(plot_dir_path / "sim_gv_roll_err.svg")
+    plt.savefig(plot_dir_path / "sim_gv_crosslevel_err.svg")
 # Delta beta plot
 flt_pitch_w = 31.4
 fig = plt.figure(figsize=(7.0, 2.8))

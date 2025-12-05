@@ -27,11 +27,11 @@ double GyroVertical::get_dpsi_p(const double t) const noexcept {
   if (t >= 0.0 && t < 25.0)
     return 0.0;
   else if (t >= 25.0 && t < 25.0 + 1.8)
-    return -1.8e-2 * (t - 25.0);
+    return 1.8e-2 * (t - 25.0);
   else if (t >= 25.0 + 1.8 && t < 25.0 + 1.8 + 49.5)
-    return -3.2e-2;
+    return 3.2e-2;
   else if (t >= 25.0 + 1.8 + 49.5 && t < 25.0 + 49.5 + 1.8 * 2)
-    return -3.2e-2 + 1.8e-2 * (t - (25.0 + 1.8 + 49.5));
+    return 3.2e-2 - 1.8e-2 * (t - (25.0 + 1.8 + 49.5));
   else
     return 0.0;
 }

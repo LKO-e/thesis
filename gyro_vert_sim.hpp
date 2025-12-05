@@ -234,29 +234,29 @@ struct GyroVertical final {
   template <typename T>
   T get_w_x(const T &psi, const T &theta, const T &gam, const T &d_psi,
             const T &d_theta, const T &d_gam, const double &V) {
-    return d_gam + d_psi * sin(theta) +
-           Ue * (sin(phi) * sin(theta) + cos(phi) * cos(psi) * cos(theta)) -
+    return d_gam - d_psi * sin(theta) +
+           Ue * (sin(phi) * sin(theta) + cos(phi) * cos(psi) * cos(theta)) +
            (V / Re) * cos(theta) * tan(phi) * sin(psi) * sin(theta);
   };
   template <typename T>
   T get_w_y(const T &psi, const T &theta, const T &gam, const T &d_psi,
             const T &d_theta, const T &d_gam, const double &V) {
-    return d_theta * sin(gam) + d_psi * cos(theta) * cos(gam) +
-           Ue * (sin(phi) * cos(gam) * cos(theta) +
+    return d_theta * sin(gam) - d_psi * cos(theta) * cos(gam) +
+           Ue * (sin(phi) * cos(gam) * cos(theta) -
                  cos(phi) *
-                     (sin(gam) * sin(psi) - cos(gam) * cos(psi) * sin(theta))) -
+                     (sin(gam) * sin(psi) + cos(gam) * cos(psi) * sin(theta))) +
            (V / Re) * cos(theta) *
-               (tan(phi) * sin(psi) * cos(theta) * cos(gam) + sin(gam));
+               (tan(phi) * sin(psi) * cos(theta) * cos(gam) - sin(gam));
   };
   template <typename T>
   T get_w_z(const T &psi, const T &theta, const T &gam, const T &d_psi,
             const T &d_theta, const T &d_gam, const double &V) {
-    return d_theta * cos(gam) - d_psi * cos(theta) * sin(gam) +
+    return d_theta * cos(gam) + d_psi * cos(theta) * sin(gam) +
            Ue * (cos(phi) *
-                     (sin(theta) * sin(gam) * cos(psi) + cos(gam) * sin(psi)) -
-                 sin(phi) * sin(gam) * cos(theta)) +
+                     (sin(theta) * sin(gam) * cos(psi) - cos(gam) * sin(psi)) -
+                 sin(phi) * sin(gam) * cos(theta)) -
            (V / Re) * cos(theta) *
-               (tan(phi) * sin(psi) * cos(theta) * sin(gam) - cos(gam));
+               (tan(phi) * sin(psi) * cos(theta) * sin(gam) + cos(gam));
   };
   // Trajectory planning
   double get_V(const double t) const noexcept;
@@ -402,14 +402,14 @@ struct GyroVertical final {
     // Transverse lateral acceleration
     double a_l =
         V * cos(x[a_theta]) *
-            (-x[a_dpsi] + V / Re * tan(phi) * sin(x[a_psi]) * cos(x[a_theta])) -
+            (x[a_dpsi] - V / Re * tan(phi) * sin(x[a_psi]) * cos(x[a_theta])) -
         2 * Ue * V *
             (sin(phi) * cos(x[a_theta]) -
              cos(phi) * sin(x[a_theta]) * cos(x[a_psi])) +
         a_lm;
     // Transverse vertical acceleration
     const double a_v = g * cos(x[a_theta]) +
-                       V * (x[a_dtheta] - V * cos(x[a_theta]) / Re) +
+                       V * (x[a_dtheta] - V * cos(x[a_theta]) / Re) -
                        2 * Ue * V * cos(phi) * sin(x[a_psi]);
     const double H_m = x[a_omega_gd] * Jrgd;
     // Friction model of the gyro pendulum suspension axis

@@ -35,21 +35,21 @@ ddpsi, ddtheta, ddgamma = sy.symbols("ddψ ddϑ ddγ")
 β, α, dβ, dα = sy.symbols("β α dβ dα")
 H = sy.symbols("H")
 g = sy.symbols("g")
-ddV = sy.symbols("ddV")
+dV = sy.symbols("dV")
 VRe1 = sy.symbols("V/Re") * sy.cos(theta)
-dphi = VRe1 * sy.cos(psi)
-dlam = -VRe1 * sy.sin(psi) / sy.cos(phi)
+dphi = VRe1 * sy.cos(-psi)
+dlam = VRe1 * sy.sin(psi) / sy.cos(phi)
 V = sy.symbols("V")
 print("Angular velocity projections onto the b-frame")
 W = (
     sy.Matrix([[dgamma, 0, 0]]).T
     + Rot("x", gamma) * sy.Matrix([[0, 0, dtheta]]).T
-    + Rot("x", gamma) * Rot("z", theta) * sy.Matrix([[0, dpsi, 0]]).T
-    + Rot("x", gamma) * Rot("z", theta) * Rot("y", psi) * sy.Matrix([[0, 0, -dphi]]).T
+    + Rot("x", gamma) * Rot("z", theta) * sy.Matrix([[0, -dpsi, 0]]).T
+    + Rot("x", gamma) * Rot("z", theta) * Rot("y", -psi) * sy.Matrix([[0, 0, -dphi]]).T
     + (
         Rot("x", gamma)
         * Rot("z", theta)
-        * Rot("y", psi)
+        * Rot("y", -psi)
         * Rot("z", -phi)
         * sy.Matrix([[dlam + U, 0, 0]]).T
     )
@@ -65,17 +65,17 @@ print()
 print("Acceleration projections onto the OX''Y''Z'' frame")
 W_ = (
     sy.Matrix([[0, 0, dtheta]]).T
-    + Rot("z", theta) * sy.Matrix([[0, dpsi, 0]]).T
-    + Rot("z", theta) * Rot("y", psi) * sy.Matrix([[0, 0, -dphi]]).T
+    + Rot("z", theta) * sy.Matrix([[0, -dpsi, 0]]).T
+    + Rot("z", theta) * Rot("y", -psi) * sy.Matrix([[0, 0, -dphi]]).T
     + (
         Rot("z", theta)
-        * Rot("y", psi)
+        * Rot("y", -psi)
         * Rot("z", -phi)
         * sy.Matrix([[dlam + 2 * U, 0, 0]]).T
     )
 )
 a = (
-    sy.Matrix([[ddV, 0, 0]]).T
+    sy.Matrix([[dV, 0, 0]]).T
     + Rot("z", theta) * sy.Matrix([[0, g, 0]]).T
     + W_.cross(sy.Matrix([[V, 0, 0]]).T)
 )

@@ -32,7 +32,7 @@ ax.semilogx(w, mag, ls="-", c="k", label=r"$\mathrm{Запр. \  зона}$")
 ax.semilogx(w, mag1, ls="-.", c="k", label=r"$\mathrm{ФНЧ \ 1 \ п.}$")
 ax.semilogx(w, mag2, ls="--", c="k", label=r"$\mathrm{ФНЧ \ 2 \ п.}$")
 ax.grid(which="both")
-ax.set_ylabel(r"$L \mathrm{,\  дБ}$")
+ax.set_ylabel(r"$\vert W_\mathrm{\varepsilon} \vert \mathrm{, \ дБ}$")
 ax.set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
 ax.legend()
 

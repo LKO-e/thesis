@@ -30,14 +30,18 @@ u = np.ones_like(t) * 10
 t, y_out, _ = sp.signal.lsim(tf2ss(W), u, t)
 fig, ax = plt.subplots(1, 2, figsize=(7.0, 2.7), frameon=False)
 ax01 = ax[0].twinx()
-(line1,) = ax[0].semilogx(omega, mag, "k-", label=r"$L, \  \mathrm{дБ}$")
-(line2,) = ax01.semilogx(omega, phase, "k--", label=r"$\mathrm{\phi, \ град.}$")
+(line1,) = ax[0].semilogx(
+    omega, mag, "k-", label=r"$\vert W_\mathrm{р}(\Omega_\mathrm{з}, \Omega)\vert$"
+)
+(line2,) = ax01.semilogx(omega, phase, "k--", label=r"$\angle W_\mathrm{р}(\Omega_\mathrm{з}, \Omega)$")
 ax[1].plot(t, y_out, "k-")
 # Decoration
 ax[0].set_title(r"a)")
 ax[1].set_title(r"б)")
-ax01.set_ylabel(r"$\mathrm{\phi, \ град.}$")
-ax[0].set_ylabel(r"$L, \mathrm{ \ дБ}$")
+ax01.set_ylabel(r"$\angle W_\mathrm{р}(\Omega_\mathrm{з}, \Omega) \mathrm{, \ град.}$")
+ax[0].set_ylabel(
+    r"$\vert W_\mathrm{р}(\Omega_\mathrm{з}, \Omega)\vert \mathrm{, \ дБ}$"
+)
 ax[0].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
 ax[1].set_xlabel(r"$t, \ \mathrm{с}$")
 ax[1].set_ylabel(r"$\Omega_\mathrm{гд}, \ \mathrm{c}^{-1} $")
@@ -51,4 +55,4 @@ else:
     plot_dir_path = Path(sys.argv[1])
     if not plot_dir_path.is_dir():
         plot_dir_path.mkdir()
-        plt.savefig(plot_dir_path / "bode_step_gyro_pend.svg")
+    plt.savefig(plot_dir_path / "bode_step_gyro_pend.svg")

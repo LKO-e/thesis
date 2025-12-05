@@ -78,11 +78,15 @@ def bode_fixed_struct_h2(ss_dict):
     ax[0, 1].legend()
     ax[1, 0].legend()
     ax[1, 1].legend()
-    ax[0, 0].set_ylabel(r"$L\mathrm{, \ дБ}$")
+    ax[0, 0].set_ylabel(
+        r"$\vert W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})\vert \mathrm{, \ дБ}$"
+    )
+    ax[1, 0].set_ylabel(
+        r"$\angle W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1}) \mathrm{, \ град.}$"
+    )
     ax[0, 0].grid(True, which="both")
     ax[0, 0].set_title("a)")
     ax[0, 1].set_title("б)")
-    ax[1, 0].set_ylabel(r"$\mathrm{\phi, \ град.}$")
     ax[1, 0].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 1].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 0].grid(True, which="both")
@@ -156,11 +160,15 @@ def bode_fixed_struct_ellips(ss_dict):
     ax[0, 1].legend()
     ax[1, 0].legend()
     ax[1, 1].legend()
-    ax[0, 0].set_ylabel(r"$L\mathrm{, \ дБ}$")
+    ax[0, 0].set_ylabel(
+        r"$\vert W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})\vert \mathrm{, \ дБ}$"
+    )
+    ax[1, 0].set_ylabel(
+        r"$\angle W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1}) \mathrm{, \ град.}$"
+    )
     ax[0, 0].grid(True, which="both")
     ax[0, 0].set_title("a)")
     ax[0, 1].set_title("б)")
-    ax[1, 0].set_ylabel(r"$\mathrm{\phi, \ град.}$")
     ax[1, 0].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 1].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 0].grid(True, which="both")
@@ -200,19 +208,61 @@ def bode_h2_obsv_noise(ss_dict):
     ax[1, 1].axhline(-180, c="k", ls=":")
     # Legends
     ax[0, 0].legend()
-    ax[0, 1].legend()
+    ax[0, 1].legend(loc=3)
     ax[1, 0].legend()
     ax[1, 1].legend()
-    ax[0, 0].set_ylabel(r"$L\mathrm{, \ дБ}$")
+    ax[0, 1].set_ylabel(
+        r"$\vert W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})\vert \mathrm{, \ дБ}$"
+    )
+    ax[0, 0].set_ylabel(r"$\vert k_\mathrm{с} W_\mathrm{ф}\vert \mathrm{, \ дБ}$")
+    ax[1, 1].set_ylabel(
+        r"$\angle W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1}) \mathrm{, \ град.}$"
+    )
+    ax[1, 0].set_ylabel(r"$\angle k_\mathrm{с} W_\mathrm{ф} \mathrm{, \ град.}$")
     ax[0, 0].grid(True, which="both")
     ax[0, 0].set_title("a)")
     ax[0, 1].set_title("б)")
-    ax[1, 0].set_ylabel(r"$\mathrm{\phi, \ град.}$")
     ax[1, 0].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 1].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 0].grid(True, which="both")
     return fig
 
+def bode_h2_test_with_corr_loop(ss_dict):
+    fig, ax = plt.subplots(2, 2, sharex="col", figsize=(7.0, 4.5), frameon=False)
+    fig.canvas.manager.set_window_title("H2 controller with corr loop")
+    w0 = np.logspace(-2, 5, 500)
+    w1 = np.logspace(1, 4, 500)
+    # Mininal noise controller
+    A, B, C, D = copy.deepcopy(list(ss_dict["h2_obsv_g"].values()))
+    Ak, Bk, Ck, Dk = copy.deepcopy(list(ss_dict["h2_corr_obsv_k"].values()))
+    C[0, :] = C[0, :] * -1
+    As, Bs, Cs, Ds = connect_series_siso((A, B, C, D), (Ak, Bk, Ck, Dk))
+    _, mag, phase = sp.signal.bode((Ak, Bk, Ck, Dk), w0)
+    ax[0, 0].semilogx(w0, mag, ls="-", c="k")
+    ax[1, 0].semilogx(w0, phase, ls="-", c="k")
+    _, mag, phase = sp.signal.bode((As, Bs, Cs, Ds), w1)
+    ax[0, 1].semilogx(w1, mag, ls="-", c="k")
+    ax[1, 1].semilogx(w1, phase, ls="-", c="k")
+    # Margins
+    ax[1, 0].axhline(-180, c="k", ls=":")
+    ax[0, 1].axhline(0, c="k", ls=":", label="")
+    ax[1, 1].axhline(-180, c="k", ls=":")
+    # Legends
+    ax[0, 1].set_ylabel(
+        r"$\vert W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})\vert \mathrm{, \ дБ}$"
+    )
+    ax[0, 0].set_ylabel(r"$\vert k_\mathrm{с} W_\mathrm{ф}\vert \mathrm{, \ дБ}$")
+    ax[1, 1].set_ylabel(
+        r"$\angle W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1}) \mathrm{, \ град.}$"
+    )
+    ax[1, 0].set_ylabel(r"$\angle k_\mathrm{с} W_\mathrm{ф} \mathrm{, \ град.}$")
+    ax[0, 0].grid(True, which="both")
+    ax[0, 0].set_title("a)")
+    ax[0, 1].set_title("б)")
+    ax[1, 0].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
+    ax[1, 1].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
+    ax[1, 0].grid(True, which="both")
+    return fig
 
 def bode_h2_ellips(ss_dict):
     fig, ax = plt.subplots(2, 2, sharex="col", figsize=(7.0, 4.5), frameon=False)
@@ -247,14 +297,20 @@ def bode_h2_ellips(ss_dict):
     ax[1, 1].axhline(-180, c="k", ls=":")
     # Legends
     ax[0, 0].legend()
-    ax[0, 1].legend()
+    ax[0, 1].legend(loc=3)
     ax[1, 0].legend()
-    ax[1, 1].legend()
-    ax[0, 0].set_ylabel(r"$L\mathrm{, \ дБ}$")
+    ax[1, 1].legend(loc=3)
+    ax[0, 1].set_ylabel(
+        r"$\vert W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})\vert \mathrm{, \ дБ}$"
+    )
+    ax[0, 0].set_ylabel(r"$\vert k_\mathrm{с} W_\mathrm{ф}\vert \mathrm{, \ дБ}$")
+    ax[1, 1].set_ylabel(
+        r"$\angle W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1}) \mathrm{, \ град.}$"
+    )
+    ax[1, 0].set_ylabel(r"$\angle k_\mathrm{с} W_\mathrm{ф} \mathrm{, \ град.}$")
     ax[0, 0].grid(True, which="both")
     ax[0, 0].set_title("a)")
     ax[0, 1].set_title("б)")
-    ax[1, 0].set_ylabel(r"$\mathrm{\phi, \ град.}$")
     ax[1, 0].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 1].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 0].grid(True, which="both")
@@ -293,14 +349,20 @@ def bode_h2_ellips_reduced(ss_dict):
     ax[0, 1].axhline(0, c="k", ls=":", label="")
     ax[1, 1].axhline(-180, c="k", ls=":")
     ax[0, 0].legend()
-    ax[0, 1].legend()
+    ax[0, 1].legend(loc=3)
     ax[1, 0].legend()
     ax[1, 1].legend()
-    ax[0, 0].set_ylabel(r"$L\mathrm{, \ дБ}$")
+    ax[0, 1].set_ylabel(
+        r"$\vert W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})\vert \mathrm{, \ дБ}$"
+    )
+    ax[0, 0].set_ylabel(r"$\vert k_\mathrm{с} \bar{W}_\mathrm{ф}\vert \mathrm{, \ дБ}$")
+    ax[1, 1].set_ylabel(
+        r"$\angle W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1}) \mathrm{, \ град.}$"
+    )
+    ax[1, 0].set_ylabel(r"$\angle k_\mathrm{с} \bar{W}_\mathrm{ф} \mathrm{, \ град.}$")
     ax[0, 0].grid(True, which="both")
     ax[0, 0].set_title("a)")
     ax[0, 1].set_title("б)")
-    ax[1, 0].set_ylabel(r"$\mathrm{\phi, \ град.}$")
     ax[1, 0].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 1].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 0].grid(True, which="both")
@@ -342,11 +404,17 @@ def bode_mixed_ellips_hinf(ss_dict):
     ax[0, 1].legend()
     ax[1, 0].legend(loc="lower left")
     ax[1, 1].legend()
-    ax[0, 0].set_ylabel(r"$L\mathrm{, \ дБ}$")
+    ax[0, 1].set_ylabel(
+        r"$\vert W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})\vert \mathrm{, \ дБ}$"
+    )
+    ax[0, 0].set_ylabel(r"$\vert k_\mathrm{с} W_\mathrm{ф}\vert \mathrm{, \ дБ}$")
+    ax[1, 1].set_ylabel(
+        r"$\angle W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1}) \mathrm{, \ град.}$"
+    )
+    ax[1, 0].set_ylabel(r"$\angle k_\mathrm{с} W_\mathrm{ф} \mathrm{, \ град.}$")
     ax[0, 0].grid(True, which="both")
     ax[0, 0].set_title("a)")
     ax[0, 1].set_title("б)")
-    ax[1, 0].set_ylabel(r"$\mathrm{\phi, \ град.}$")
     ax[1, 0].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 1].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1, 0].grid(True, which="both")
@@ -427,12 +495,13 @@ def mag_dist_to_theta(ss_dict):
     ax[1].semilogx(w0, mag, ls="-", c="k", label=r"ФНЧ")
     # Decoration
     ax[0].legend()
-    ax[0].set_ylabel(r"$L\mathrm{, \ дБ}$")
+    ax[0].set_ylabel(
+        r"$\vert W_\mathrm{з}(M_\mathrm{в}^x, \mathrm{\vartheta_1})\vert \mathrm{, \ дБ}$"
+    )
     ax[0].grid(True, which="both")
     ax[0].set_title("a)")
     ax[0].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1].legend()
-    ax[1].set_ylabel(r"$L\mathrm{, \ дБ}$")
     ax[1].grid(True, which="both")
     ax[1].set_title("б)")
     ax[1].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
@@ -507,12 +576,13 @@ def mag_cmd_der_to_u(ss_dict):
     ax[1].semilogx(w0, mag, ls="-", c="k", label=r"ФНЧ")
     # Decoration
     ax[0].legend()
-    ax[0].set_ylabel(r"$L\mathrm{, \ дБ}$")
+    ax[0].set_ylabel(
+        r"$\vert W_\mathrm{з}(\dot{\mathrm{\vartheta}}, u_\mathrm{с})\vert \mathrm{, \ дБ}$"
+    )
     ax[0].grid(True, which="both")
     ax[0].set_title("a)")
     ax[0].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax[1].legend()
-    ax[1].set_ylabel(r"$L\mathrm{, \ дБ}$")
     ax[1].grid(True, which="both")
     ax[1].set_title("б)")
     ax[1].set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
@@ -732,24 +802,40 @@ def bode_result_controller(ss_dict):
     C[0, :] = C[0, :] * -1
     As, Bs, Cs, Ds = connect_series_siso((A, B, C, D), (Ak, Bk, Ck, Dk))
     _, mag, phase = sp.signal.bode((Ak, Bk, Ck, Dk), w0)
-    (line1,) = ax[0].semilogx(w0, mag, ls="-", c="k", label=r"$L, \  \mathrm{дБ}$")
+    (line1,) = ax[0].semilogx(
+        w0, mag, ls="-", c="k", label=r"$\vert k_\mathrm{с} W_\mathrm{ф}\vert$"
+    )
     (line2,) = ax0.semilogx(
-        w0, phase, ls="--", c="k", label=r"$\mathrm{\phi, \ град.}$"
+        w0, phase, ls="--", c="k", label=r"$\angle k_\mathrm{с} W_\mathrm{ф}$"
     )
     _, mag, phase = sp.signal.bode((As, Bs, Cs, Ds), w1)
-    (line3,) = ax[1].semilogx(w1, mag, ls="-", c="k", label=r"$L, \  \mathrm{дБ}$")
+    (line3,) = ax[1].semilogx(
+        w1,
+        mag,
+        ls="-",
+        c="k",
+        label=r"$\vert W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})\vert$",
+    )
     (line4,) = ax1.semilogx(
-        w1, phase, ls="--", c="k", label=r"$\mathrm{\phi, \ град.}$"
+        w1,
+        phase,
+        ls="--",
+        c="k",
+        label=r"$\angle W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})$",
     )
     # Decoration
-    ax[0].set_ylabel(r"$L\mathrm{, \ дБ}$")
-    ax[1].set_ylabel(r"$L\mathrm{, \ дБ}$")
-    ax0.set_ylabel(r"$\mathrm{\phi, \ град.}$")
-    ax1.set_ylabel(r"$\mathrm{\phi, \ град.}$")
+    ax[1].set_ylabel(
+        r"$\vert W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})\vert \mathrm{, \ дБ}$"
+    )
+    ax[0].set_ylabel(r"$\vert k_\mathrm{с} W_\mathrm{ф}\vert \mathrm{, \ дБ}$")
+    ax1.set_ylabel(
+        r"$\angle W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1}) \mathrm{, \ град.}$"
+    )
+    ax0.set_ylabel(r"$\angle k_\mathrm{с} W_\mathrm{ф} \mathrm{, \ град.}$")
     ax0.set_yticks([0, -90, -180])
     ax1.set_yticks([0, -90, -180, -270, -360, -450])
-    ax0.legend(handles=[line1, line2], loc="lower left")
-    ax1.legend(handles=[line3, line4], loc="lower left")
+    ax0.legend(handles=[line1, line2], loc=3)
+    ax1.legend(handles=[line3, line4], loc=3)
     ax[0].set_title("a)")
     ax[1].set_title("б)")
     return fig
@@ -757,7 +843,7 @@ def bode_result_controller(ss_dict):
 
 def digi_bode(ss_dict):
     A, B, C, D = copy.deepcopy(list(ss_dict["h2_case_5_g"].values()))
-    num, den = tf_to_num_den(ss2tf((A, B, C * 1945, D))[0])
+    num, den = tf_to_num_den(ss2tf((A, B, C * -1945, D))[0])
     vec = []
     w = np.logspace(0, 3, 10000)
     Ts = 13e-3
@@ -771,11 +857,21 @@ def digi_bode(ss_dict):
     fig, ax = plt.subplots(1, 1, figsize=(7.0, 2.6))
     fig.canvas.manager.set_window_title("digi_bode")
     ax2 = ax.twinx()
-    (line1,) = ax.semilogx(w, mag, "k-", label=r"$L, \  \mathrm{дБ}$")
-    (line2,) = ax2.semilogx(w, phase, "k--", label=r"$\mathrm{\phi, \ град.}$")
+    (line1,) = ax.semilogx(
+        w,
+        mag,
+        "k-",
+        label=r"$\vert W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})\vert$",
+    )
+    (line2,) = ax2.semilogx(
+        w,
+        phase,
+        "k--",
+        label=r"$\angle W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})$",
+    )
     ax2.set_yticks([-90, -180, -270, -360, -450])
-    ax2.set_ylabel(r"$\mathrm{\phi, \ град.}$")
-    ax.set_ylabel(r"$L, \  \mathrm{дБ}$")
+    ax2.set_ylabel(r"$\angle W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1}) \mathrm{, \ град.}$")
+    ax.set_ylabel(r"$\vert W_\mathrm{р}(\mathrm{\vartheta}, \mathrm{\vartheta_1})\vert \mathrm{, \ дБ}$")
     ax.set_xlabel(r"$\mathrm{\omega, \  с^{-1}}$")
     ax2.legend(handles=[line1, line2], loc="lower left")
     return fig
@@ -826,6 +922,7 @@ if __name__ == "__main__":
     # Make plots
     figures = {}
     figures["bode_h2_obsv_noise"] = bode_h2_obsv_noise(ss_dict)
+    figures["bode_h2_test_with_corr_loop"] = bode_h2_test_with_corr_loop(ss_dict)
     figures["bode_h2_ellips"] = bode_h2_ellips(ss_dict)
     figures["bode_h2_ellips_reduced"] = bode_h2_ellips_reduced(ss_dict)
     figures["bode_mixed_ellips_hinf"] = bode_mixed_ellips_hinf(ss_dict)
