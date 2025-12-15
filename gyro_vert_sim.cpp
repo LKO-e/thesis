@@ -1,4 +1,5 @@
 #include "gyro_vert_sim.hpp"
+#include "gyro_vert_sim_trajectory.hpp"
 #include <algorithm>
 #include <boost/numeric/odeint.hpp>
 #include <chrono>
@@ -9,88 +10,13 @@
 #include <string>
 #include <vector>
 
-double GyroVertical::get_V(const double t) const noexcept {
-  if (t >= 0.0 && t < 27.75)
-    return 0.8 * t;
-  else
-    return 22.2;
-}
-double GyroVertical::get_dtheta_p(const double t) const noexcept {
-  if (t >= 0.0 && t < 15.0)
-    return 0.0;
-  else if (t >= 15.0 && t < 15.0 + 4.8)
-    return 7.4e-3;
-  else
-    return 0.0;
-}
-double GyroVertical::get_dpsi_p(const double t) const noexcept {
-  if (t >= 0.0 && t < 25.0)
-    return 0.0;
-  else if (t >= 25.0 && t < 25.0 + 1.8)
-    return 1.8e-2 * (t - 25.0);
-  else if (t >= 25.0 + 1.8 && t < 25.0 + 1.8 + 49.5)
-    return 3.2e-2;
-  else if (t >= 25.0 + 1.8 + 49.5 && t < 25.0 + 49.5 + 1.8 * 2)
-    return 3.2e-2 - 1.8e-2 * (t - (25.0 + 1.8 + 49.5));
-  else
-    return 0.0;
-}
-double GyroVertical::get_dgam_p(const double t) const noexcept {
-  if (t >= 0.0 && t < 22.0)
-    return 0.0;
-  else if (t >= 22.0 && t < 27.0)
-    return 1.5e-2;
-  else if (t >= 27.0 && t < 77.0)
-    return 0.0;
-  else if (t >= 77.0 && t < 82.0)
-    return -1.5e-2;
-  else
-    return 0.0;
-}
-double GyroVertical::get_dgam_k(const double t) const noexcept {
-  constexpr double A = 0.2 / 57.3;
-  constexpr double w = 2 * 3.14 * 2;
-  constexpr double dt = 27.75;
-  if (t >= 0 && t < dt)
-    return (A * w) * t / dt * cos(w * t / dt * t + 3.14 / 2);
-  else
-    return A * w * cos(w * t + 3.14 / 2);
-}
-double GyroVertical::get_dtheta_k(const double t) const noexcept {
-  constexpr double A = 0.02 / 57.3;
-  constexpr double w = 3 * 3.14 * 2;
-  constexpr double dt = 27.75;
-
-  if (t >= 0 && t < dt)
-    return (A * w) * t / dt * cos(w * t / dt * t);
-  else
-    return A * w * cos(w * t);
-}
-double GyroVertical::get_dpsi_k(const double t) const noexcept {
-  constexpr double A = 2e-3;
-  constexpr double w = 2 * 3.14 * 2;
-  constexpr double dt = 27.75;
-  if (t >= 0 && t < dt)
-    return (A * w) * t / dt * cos(w * t / dt * t);
-  else
-    return A * w * cos(w * t);
-}
-double GyroVertical::get_a_lm(const double t) const noexcept {
-  constexpr double A = 0.3;
-  constexpr double w = 1.0 * 2 * 3.14;
-  if (t >= 0 && t < 27.75)
-    return A / 27.75 * t * sin(w * t + 3.14 / 4);
-  else
-    return A * sin(w * t + 3.14 / 4);
-}
-
 typedef boost::numeric::odeint::runge_kutta_dopri5<GyroVertical::state_vector_t>
     error_stepper_type;
 
 int main(const int argc, const char *argv[]) {
   // Default parameters
   bool is_dyn_tun_on = true;
-  bool is_earth_rate_corr_on = true;
+  bool is_psi_error = false;
   bool is_pitch_corr_on = true;
   bool is_vel_meas_error_on = false;
   // Read input flags
@@ -135,18 +61,17 @@ int main(const int argc, const char *argv[]) {
       return 1;
     }
   }
-  auto it_earth_corr =
-      std::find(args.begin(), args.end(), "--earth_rate_correction");
-  if (it_earth_corr == args.end())
-    it_earth_corr = std::find(args.begin(), args.end(), "-e");
-  if (it_earth_corr != args.end()) {
-    if (std::next(it_earth_corr) == args.end()) {
+  auto it_psi_error = std::find(args.begin(), args.end(), "--yaw_error");
+  if (it_psi_error == args.end())
+    it_psi_error = std::find(args.begin(), args.end(), "-y");
+  if (it_psi_error != args.end()) {
+    if (std::next(it_psi_error) == args.end()) {
       std::cout << "A required argument was not provided";
       return 1;
-    } else if (*std::next(it_earth_corr) == "ON")
-      is_earth_rate_corr_on = true;
-    else if (*std::next(it_earth_corr) == "OFF")
-      is_earth_rate_corr_on = false;
+    } else if (*std::next(it_psi_error) == "ON")
+      is_psi_error = true;
+    else if (*std::next(it_psi_error) == "OFF")
+      is_psi_error = false;
     else {
       std::cout << "An unknown argument was provided";
       return 1;
@@ -200,10 +125,19 @@ int main(const int argc, const char *argv[]) {
   // Initialize system
   GyroVertical gyro_vert;
   // Parameters settings
-  gyro_vert.is_earth_rate_corr_on = is_earth_rate_corr_on;
+  gyro_vert.is_psi_error = is_psi_error;
   gyro_vert.is_pitch_corr_on = is_pitch_corr_on;
   gyro_vert.is_gyn_tun_on = is_dyn_tun_on;
   gyro_vert.is_vel_error_on = is_vel_meas_error_on;
+  // Trajectory
+  gyro_vert.p_get_dpsi_p = &get_dpsi_p;
+  gyro_vert.p_get_dtheta_p = &get_dtheta_p;
+  gyro_vert.p_get_dgam_p = &get_dgam_p;
+  gyro_vert.p_get_dpsi_k = &get_dpsi_k;
+  gyro_vert.p_get_dtheta_k = &get_dtheta_k;
+  gyro_vert.p_get_dgam_k = &get_dgam_k;
+  gyro_vert.p_getV = &get_V;
+  gyro_vert.p_get_a_lm = &get_a_lm;
   const double T_diff = 1e-2;
   const double ksi_diff = 0.707;
   gyro_vert.diff_psi.a0 = 1 / (T_diff * T_diff);
@@ -252,13 +186,13 @@ int main(const int argc, const char *argv[]) {
   gyro_vert.Jpu = 3.0e-5;
   gyro_vert.H = 0.2;
   gyro_vert.Mfx_max = 200e-4;
-  gyro_vert.Mfz_max = 1.2e-5;
+  gyro_vert.Mfz_max = 5.0e-5;
   gyro_vert.ml = 9e-4;
-  gyro_vert.b_m = 7.2e-4;
+  gyro_vert.b_m = 2.0e-3;
   gyro_vert.Jrgd = 1.5e-5;
   gyro_vert.Mfm_max = 2.6e-6;
   gyro_vert.Mdx = 20e-4;
-  gyro_vert.Mdz = 2e-6;
+  gyro_vert.Mdz = -1.35e-5;
   // Initial value of a state space vector
   GyroVertical::state_vector_t x0{};
   const double t_start = 0.0;

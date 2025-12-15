@@ -25,7 +25,7 @@ printf "Normal simultation \n"
 ./sim_gv.o --vel_meas_error OFF -o sim_gv.csv
 python3 gyro_vert_sim_plot.py sim_gv.csv plots/sim_gv
 printf "Simulation without Earth's rate correction and with velocity measurement error \n"
-./sim_gv.o --earth_rate_correction OFF --vel_meas_error ON -o sim_gv.csv
+./sim_gv.o --yaw_error ON --vel_meas_error ON -o sim_gv.csv
 python3 gyro_vert_sim_plot.py sim_gv.csv plots/sim_gv_earth_and_v
 printf "Simulation with the dynamic tuning system OFF \n"
 ./sim_gv.o --dynamic_tuning OFF -o sim_gv.csv

@@ -1,0 +1,39 @@
+#! /bin/bash
+# Try to auto-detect Boost
+set -e # exit if a command fails
+if [ -d "/usr/include/boost" ]; then
+  BOOST_PATH="/usr/include"
+elif [ -d "/usr/local/include/boost" ]; then
+  BOOST_PATH="/usr/local/include"
+elif [ -d "/opt/homebrew/include/boost" ]; then
+  BOOST_PATH="/opt/homebrew/include"
+elif [ -d "$HOME/.local/include/boost" ]; then
+  BOOST_PATH="$HOME/.local/include"
+else
+  echo "Enter the path to Boost library..."
+  read -e BOOST_PATH
+fi
+
+# Change into the directory of this script
+OLDPWD=$(pwd)
+cd "$(dirname "$0")" || exit 1
+mkdir -p plots
+
+printf "Compiling... \n"
+g++ -std=c++17 -I $BOOST_PATH -O2 -I ./ prior_gyro_vert_sim.cpp -o prior_sim_gv.o
+printf "Normal simultation \n"
+./prior_sim_gv.o -o prior_sim_gv.csv
+python3 prior_gyro_vert_sim_plot.py prior_sim_gv.csv plots/prior_sim_gv
+printf "Simulation without a turn \n"
+./prior_sim_gv.o --turn OFF --pitch OFF -o prior_sim_gv.csv
+python3 prior_gyro_vert_sim_plot.py prior_sim_gv.csv plots/prior_sim_gv_no_turn
+printf "Simaulation without an inclination \n"
+./prior_sim_gv.o --pitch OFF -o prior_sim_gv.csv
+python3 prior_gyro_vert_sim_plot.py prior_sim_gv.csv plots/prior_sim_gv_no_incl --highlight
+printf "Simulation without turning error correction and withot inclination \n"
+./prior_sim_gv.o --correction OFF --pitch OFF --turn OFF -o prior_sim_gv.csv
+python3 prior_gyro_vert_sim_plot.py prior_sim_gv.csv plots/prior_sim_gv_no_corr --highlight
+rm prior_sim_gv.o
+rm prior_sim_gv.csv
+
+cd "$OLDPWD" || exit 1
